@@ -85,7 +85,7 @@ export function PromptInputAttachment({
 
   return (
     <div
-      className={cn('group relative h-14 w-14 rounded-md border', className)}
+      className={cn('group relative h-24 w-24 rounded-md border', className)}
       key={data.id}
       {...props}
     >
@@ -94,8 +94,8 @@ export function PromptInputAttachment({
           alt={data.filename || 'attachment'}
           className="size-full rounded-md object-cover"
           src={data.url}
-          width={56}
-          height={56}
+          width={96}
+          height={96}
           unoptimized
         />
       ) : (
@@ -200,6 +200,7 @@ export type PromptInputProps = Omit<
   'onSubmit'
 > & {
   accept?: string; // e.g., "image/*" or leave undefined for any
+  capture?: boolean | 'user' | 'environment';
   multiple?: boolean;
   // When true, accepts drops anywhere on document. Default false (opt-in).
   globalDrop?: boolean;
@@ -222,6 +223,7 @@ export type PromptInputProps = Omit<
 export const PromptInput = ({
   className,
   accept,
+  capture,
   multiple,
   globalDrop,
   syncHiddenInput,
@@ -463,10 +465,12 @@ export const PromptInput = ({
       <input
         accept={accept}
         className="hidden"
+        capture={capture as any}
         multiple={multiple}
         onChange={handleChange}
         ref={inputRef}
         type="file"
+        autoComplete="off"
       />
       <form
         className={cn(

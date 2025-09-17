@@ -2,10 +2,6 @@
 
 import {
   PromptInput,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
@@ -22,8 +18,9 @@ import {
   usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 
 import { fileToDataUrl } from '@/lib/image-utils';
 import type {
@@ -41,6 +38,7 @@ declare global {
     __promptInputActions?: {
       addFiles: (files: File[] | FileList) => void;
       clear: () => void;
+      openFileDialog: () => void;
     };
   }
 }
@@ -105,6 +103,37 @@ export default function ImageGenerator() {
   const [model, setModel] = useState<ModelOption>('gemini');
   const [imageHistory, setImageHistory] = useState<GeneratedImage[]>([]);
   const promptInputRef = useRef<HTMLFormElement>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
+
+  // Simple camera toggle
+  const toggleCamera = useCallback(() => {
+    setShowCamera(!showCamera);
+  }, [showCamera]);
+
+  // Capture photo using react-webcam
+  const capturePhoto = useCallback(() => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        // Convert data URL to blob and then to file
+        fetch(imageSrc)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+            window.__promptInputActions?.addFiles([file]);
+            setShowCamera(false); // Close camera after capture
+          })
+          .catch(err => {
+            console.error('Error converting image:', err);
+            alert('Failed to capture photo. Please try again.');
+          });
+      } else {
+        alert('Camera not ready. Please try again.');
+      }
+    }
+  }, []);
 
   // Handle adding files to the input from external triggers (like from image history)
   const handleAddToInput = useCallback((files: File[]) => {
@@ -123,7 +152,7 @@ export default function ImageGenerator() {
   }, []);
 
   // Component to bridge PromptInput context with external file operations
-  function FileInputManager() {
+  function AttachmentsBridge() {
     const attachments = usePromptInputAttachments();
 
     // Store reference to attachment actions for external use
@@ -131,6 +160,7 @@ export default function ImageGenerator() {
       window.__promptInputActions = {
         addFiles: attachments.add,
         clear: attachments.clear,
+        openFileDialog: attachments.openFileDialog,
       };
 
       return () => {
@@ -141,6 +171,61 @@ export default function ImageGenerator() {
     return null;
   }
 
+  // Component to show photo selection status
+  function PhotoSelectionStatus() {
+    const attachments = usePromptInputAttachments();
+    const hasFiles = attachments.files.length > 0;
+
+    if (hasFiles) {
+      return null; // Don't show anything when files are present
+    }
+
+    return (
+      <div className="p-4 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg mx-3 my-3">
+        <p className="text-sm">📷 No photo selected</p>
+        <p className="text-xs mt-1">Use Camera or Gallery buttons below to add a photo</p>
+      </div>
+    );
+  }
+
+  // Enhanced camera access function
+  const triggerCameraCapture = useCallback(() => {
+    if (showCamera) {
+      // If camera is already open, capture the photo
+      capturePhoto();
+    } else {
+      // Show camera for live preview
+      toggleCamera();
+    }
+  }, [showCamera, capturePhoto, toggleCamera]);
+
+  // Fallback file picker function
+  const triggerFilePicker = useCallback(() => {
+    window.__promptInputActions?.openFileDialog?.();
+  }, []);
+
+  // Submit button that has access to attachment state
+  function SubmitButton() {
+    const attachments = usePromptInputAttachments();
+
+    return (
+      <PromptInputSubmit 
+        status={submitting ? 'submitted' : undefined}
+        disabled={!attachments.files.length}
+        className="flex-1 sm:flex-initial whitespace-nowrap px-2 sm:px-4 h-9 text-xs sm:text-sm min-w-0"
+        size="sm"
+      >
+        <span className="sm:hidden flex items-center gap-1">
+          <Sparkles size={16} />
+        </span>
+        <span className="hidden sm:inline flex items-center gap-2">
+          <Sparkles size={16} />
+          Generate NYC Shot
+        </span>
+      </PromptInputSubmit>
+    );
+  }
+
   /**
    * Handles form submission for both image generation and editing
    * - Text-only: generates new image using selected model
@@ -148,16 +233,22 @@ export default function ImageGenerator() {
    */
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
-      const hasText = Boolean(message.text?.trim());
       const hasAttachments = Boolean(message.files?.length);
 
-      // Require either text prompt or attachments
-      if (!(hasText || hasAttachments)) {
+      // Require a single selfie/photo
+      if (!hasAttachments || (message.files?.length || 0) === 0) {
+        return;
+      }
+      if ((message.files?.length || 0) > 1) {
+        // Only one photo allowed
         return;
       }
 
-      const isEdit = hasAttachments;
-      const prompt = message.text?.trim() || '';
+      setSubmitting(true);
+
+      const isEdit = true;
+      const prompt =
+        'Place this person into a vibrant, photorealistic scene in Times Square, New York City, at golden hour. Maintain the person’s identity and pose. Blend lighting and shadows realistically with neon signage, billboards, and reflective wet pavement. Use cinematic color grading, street-level perspective, and crowd ambiance. High resolution, natural skin tones, no artifacts.';
 
       // Generate unique ID for this request
       const imageId = `img_${Date.now()}`;
@@ -270,6 +361,8 @@ export default function ImageGenerator() {
               : img
           )
         );
+      } finally {
+        setSubmitting(false);
       }
     },
     [model]
@@ -277,29 +370,72 @@ export default function ImageGenerator() {
 
   return (
     <div className="space-y-6">
+      <div className="text-center mb-4 sm:mb-6 px-4 sm:px-0">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">Place Yourself in Times Square</h2>
+        <p className="text-sm sm:text-base text-gray-600 mb-1 sm:mb-0">Take a selfie with your camera or choose a photo from your gallery</p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">Use the Camera button to take a new photo, or Gallery to choose an existing one</p>
+      </div>
+
       <PromptInput
         ref={promptInputRef}
         onSubmit={handleSubmit}
         className="relative"
         globalDrop
-        multiple
+        multiple={false}
         accept="image/*"
+        capture="user"
       >
-        <FileInputManager />
+        <AttachmentsBridge />
         <PromptInputBody>
           <PromptInputAttachments>
             {attachment => <PromptInputAttachment data={attachment} />}
           </PromptInputAttachments>
-          <PromptInputTextarea placeholder="Describe the image you want to generate, or attach an image and describe how to edit it..." />
+          {showCamera ? (
+            <div className="p-6 mx-3 my-3">
+              <div className="flex justify-center mb-6">
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  className="rounded-xl shadow-lg border max-w-full"
+                  width={600}
+                  height={450}
+                  videoConstraints={{
+                    facingMode: "user"
+                  }}
+                />
+              </div>
+              <div className="flex justify-center gap-2 sm:gap-3">
+                <Button
+                  type="button"
+                  onClick={capturePhoto}
+                  className="flex-1 sm:flex-initial px-4 sm:px-6 py-2 text-sm sm:text-base"
+                >
+                  <span className="sm:hidden">📸 Take</span>
+                  <span className="hidden sm:inline">📸 Take Photo</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={toggleCamera}
+                  className="flex-1 sm:flex-initial px-4 sm:px-6 py-2 text-sm sm:text-base"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <PhotoSelectionStatus />
+          )}
+          {/* Hidden textarea for form submission compatibility */}
+          <PromptInputTextarea
+            className="sr-only"
+            defaultValue=""
+            tabIndex={-1}
+          />
         </PromptInputBody>
         <PromptInputToolbar>
           <PromptInputTools>
-            <PromptInputActionMenu>
-              <PromptInputActionMenuTrigger />
-              <PromptInputActionMenuContent>
-                <PromptInputActionAddAttachments />
-              </PromptInputActionMenuContent>
-            </PromptInputActionMenu>
             <PromptInputModelSelect
               onValueChange={value => {
                 setModel(value as ModelOption);
@@ -318,17 +454,39 @@ export default function ImageGenerator() {
               </PromptInputModelSelectContent>
             </PromptInputModelSelect>
           </PromptInputTools>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={clearForm}
-              className="h-9 w-9 p-0"
+              className="h-9 w-9 p-0 shrink-0"
             >
               <X size={16} />
             </Button>
-            <PromptInputSubmit />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={triggerCameraCapture}
+              disabled={submitting}
+              className="flex-1 sm:flex-initial whitespace-nowrap px-2 sm:px-3 h-9 text-xs sm:text-sm min-w-0"
+            >
+              <span className="sm:hidden">{submitting ? '⏳' : showCamera ? '📸' : '📷'}</span>
+              <span className="hidden sm:inline">{submitting ? 'Processing…' : showCamera ? '📸 Capture' : '📷 Camera'}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={triggerFilePicker}
+              disabled={submitting}
+              className="flex-1 sm:flex-initial whitespace-nowrap px-2 sm:px-3 h-9 text-xs sm:text-sm min-w-0"
+            >
+              <span className="sm:hidden">📁</span>
+              <span className="hidden sm:inline">📁 Gallery</span>
+            </Button>
+            <SubmitButton />
           </div>
         </PromptInputToolbar>
       </PromptInput>

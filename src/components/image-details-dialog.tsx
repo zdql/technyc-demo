@@ -64,7 +64,7 @@ export function ImageDetailsDialog({
         </DialogHeader>
         <div className="space-y-6">
           {/* Full size image */}
-          <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
+          <div className="relative w-full max-w-2xl mx-auto aspect-square bg-gray-100 rounded-lg overflow-hidden">
             {image.error ? (
               <div className="flex flex-col items-center justify-center h-full space-y-3 p-6">
                 <div className="text-red-500 text-lg">⚠️ Generation failed</div>
@@ -129,33 +129,36 @@ export function ImageDetailsDialog({
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
             <Button
               onClick={handleCopy}
               disabled={!isImageActionable(image)}
-              className="flex items-center gap-2 justify-center"
+              className="flex items-center gap-2 justify-center py-3 sm:py-2 text-sm sm:text-base"
               aria-label="Copy image to clipboard"
             >
               <Copy size={16} />
-              Copy
+              <span className="sm:hidden">Copy</span>
+              <span className="hidden sm:inline">Copy</span>
             </Button>
             <Button
               onClick={handleDownload}
               disabled={!isImageActionable(image)}
-              className="flex items-center gap-2 justify-center"
+              className="flex items-center gap-2 justify-center py-3 sm:py-2 text-sm sm:text-base"
               aria-label="Download image"
             >
               <Download size={16} />
-              Download
+              <span className="sm:hidden">Download</span>
+              <span className="hidden sm:inline">Download</span>
             </Button>
             <Button
               onClick={handleAddToInput}
               disabled={!isImageActionable(image)}
-              className="flex items-center gap-2 justify-center"
+              className="flex items-center gap-2 justify-center py-3 sm:py-2 text-sm sm:text-base"
               aria-label="Edit this image"
             >
               <Edit size={16} />
-              Edit
+              <span className="sm:hidden">Edit</span>
+              <span className="hidden sm:inline">Edit</span>
             </Button>
           </div>
         </div>

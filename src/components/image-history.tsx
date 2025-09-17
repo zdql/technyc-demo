@@ -84,7 +84,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
       role="button"
       tabIndex={0}
       aria-label={`Open details for image: ${image.prompt.slice(0, 50)}${image.prompt.length > 50 ? '...' : ''}`}
-      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all animate-in fade-in slide-in-from-left-4 duration-500"
+      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all animate-in fade-in slide-in-from-left-4 duration-500 w-full max-w-xs"
     >
       {image.isLoading ? (
         <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
@@ -105,7 +105,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
             className="object-cover"
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw"
           />
-          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
+          <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity duration-200">
             <Button
               size="sm"
               onClick={e => {
@@ -114,10 +114,10 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
               }}
               aria-label="Copy image to clipboard"
               title="Copy image"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
               disabled={!isImageActionable(image)}
             >
-              <Copy size={14} />
+              <Copy size={16} className="sm:w-3.5 sm:h-3.5" />
             </Button>
             <Button
               size="sm"
@@ -127,10 +127,10 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
               }}
               aria-label="Download image"
               title="Download image"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
               disabled={!isImageActionable(image)}
             >
-              <Download size={14} />
+              <Download size={16} className="sm:w-3.5 sm:h-3.5" />
             </Button>
             <Button
               size="sm"
@@ -140,10 +140,10 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
               }}
               aria-label="Edit this image"
               title="Edit image"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150 focus:ring-2 focus:ring-blue-500"
               disabled={!isImageActionable(image)}
             >
-              <Edit size={14} />
+              <Edit size={16} className="sm:w-3.5 sm:h-3.5" />
             </Button>
           </div>
         </>
@@ -183,7 +183,7 @@ export const ImageHistory = React.memo(function ImageHistory({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Generated Images</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 transition-all duration-300 ease-out">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 transition-all duration-300 ease-out justify-items-center">
         {imageHistory.map(image => (
           <ImageHistoryItem
             key={image.id}

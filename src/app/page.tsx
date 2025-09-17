@@ -37,27 +37,35 @@ export default async function Home() {
 
   // Main application interface
   return (
-    <div className="flex flex-col h-screen p-2 sm:p-4 max-w-6xl mx-auto">
-      {/* Header with title and token display */}
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full mb-4 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-slate-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm gap-3 sm:gap-0">
-        <div className="flex items-center space-x-3">
-          <h1 className="text-2xl sm:text-3xl font-mono bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            Echo Image Gen
-          </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Echo token display widget */}
-          {_isSignedIn && <EchoWidget />}
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      {/* NYC Themed Header */}
+      <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 text-white">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm sm:text-lg flex-shrink-0">NY</div>
+            <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+              <span className="sm:hidden">TS Studio</span>
+              <span className="hidden sm:inline">Times Square Studio</span>
+            </h1>
+          </div>
+          <div className="mt-2 sm:mt-0 flex items-center justify-end sm:justify-start gap-3 flex-shrink-0">
+            {_isSignedIn && (
+              <div className="scale-90 sm:scale-100 origin-right">
+                <EchoWidget />
+              </div>
+            )}
+          </div>
+        </header>
+      </div>
 
       {/* Main image generation interface */}
-      <div className="relative">
-        <ImageGenerator />
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 -mt-4">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <ImageGenerator />
+        </div>
 
-        {/* Overlay when not signed in */}
         {!_isSignedIn && (
-          <div className="absolute inset-0 backdrop-blur-[2px] bg-white/30 flex items-center justify-center rounded-xl border border-gray-300">
+          <div className="absolute inset-0 backdrop-blur-[2px] bg-black/20 flex items-center justify-center rounded-xl">
             <EchoSignIn />
           </div>
         )}
