@@ -465,7 +465,7 @@ export const PromptInput = ({
       <input
         accept={accept}
         className="hidden"
-        capture={capture as any}
+        capture={capture}
         multiple={multiple}
         onChange={handleChange}
         ref={inputRef}

@@ -220,7 +220,6 @@ export default function ImageGenerator() {
         </span>
         <span className="hidden sm:inline flex items-center gap-2">
           <Sparkles size={16} />
-          Generate NYC Shot
         </span>
       </PromptInputSubmit>
     );

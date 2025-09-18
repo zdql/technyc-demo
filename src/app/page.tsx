@@ -40,7 +40,7 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-50">
       {/* NYC Themed Header */}
       <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 text-white">
+        <header className="flex flex-row justify-between items-center w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 text-white">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm sm:text-lg flex-shrink-0">NY</div>
             <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
@@ -48,7 +48,7 @@ export default async function Home() {
               <span className="hidden sm:inline">Times Square Studio</span>
             </h1>
           </div>
-          <div className="mt-2 sm:mt-0 flex items-center justify-end sm:justify-start gap-3 flex-shrink-0">
+          <div className="flex items-center justify-end sm:justify-start gap-3 flex-shrink-0">
             {_isSignedIn && (
               <div className="scale-90 sm:scale-100 origin-right">
                 <EchoWidget />
